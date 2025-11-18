@@ -31,12 +31,22 @@
         role="menu"
         (click)="$event.stopPropagation()">
         <li role="none">
-          <button role="menuitem" class="menu-item" (click)="exportCsv(); $event.stopPropagation()" [disabled]="!hasRows">
+          <button role="menuitem"
+                  class="menu-item"
+                  type="button"
+                  (click)="exportCsv(); $event.stopPropagation()"
+                  [disabled]="!hasRows"
+                  [attr.aria-disabled]="hasRows ? 'false' : 'true'">
             CSV
           </button>
         </li>
         <li role="none">
-          <button role="menuitem" class="menu-item" (click)="exportJson(); $event.stopPropagation()" [disabled]="!hasRows">
+          <button role="menuitem"
+                  class="menu-item"
+                  type="button"
+                  (click)="exportJson(); $event.stopPropagation()"
+                  [disabled]="!hasRows"
+                  [attr.aria-disabled]="hasRows ? 'false' : 'true'">
             JSON
           </button>
         </li>

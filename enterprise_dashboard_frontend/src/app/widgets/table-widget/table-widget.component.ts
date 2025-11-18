@@ -31,10 +31,12 @@ export class TableWidgetComponent {
         this.rows.set(data);
         // Publish to bridge so header can export current displayed rows
         this.tableBridge.setRows(data);
-        // Minimal runtime logging guard to aid debugging if empty
+        // Minimal runtime logging guard to aid debugging, including positive confirmation
         try {
           if (!data.length) {
             console.info('[TableWidget] No table rows loaded to publish yet.');
+          } else {
+            console.debug('[TableWidget] Published rows to bridge:', data.length);
           }
         } catch {}
       })

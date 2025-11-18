@@ -129,7 +129,7 @@ export class CsvExportService {
    * - Checks for Blob and URL support
    * - Creates object URL and a temporary anchor
    * - Appends to DOM, clicks, then removes and revokes the URL
-   * - Falls back to data: URL when Blob/URL is unavailable
+   * - Falls back to data: URL (base64) when Blob/URL is unavailable
    */
   private triggerDownload(content: string, filename: string, mime: string): void {
     const g: any = typeof globalThis !== 'undefined' ? (globalThis as any) : ({} as any);
@@ -145,6 +145,7 @@ export class CsvExportService {
       return;
     }
 
+    // Prefer Blob URL path for reliability and large files
     if (hasBlobCtor && hasURL) {
       try {
         const blob = new g.Blob([content], { type: mime });
@@ -175,6 +176,7 @@ export class CsvExportService {
               }
             } catch {}
           }
+          try { console.debug('[CsvExportService] Blob URL download path used.'); } catch {}
           return;
         }
       } catch (e) {
@@ -182,16 +184,29 @@ export class CsvExportService {
       }
     }
 
-    // Fallback: data URL (may be limited by size in some browsers)
+    // Fallback: data URL with base64 to avoid charset issues with non-ASCII content
     try {
       const link = doc.createElement('a');
-      const encoded = encodeURIComponent(content);
-      link.href = `data:${mime},${encoded}`;
+      let base64 = '';
+      try {
+        base64 = g.btoa(unescape(encodeURIComponent(content)));
+      } catch {
+        // If encodeURIComponent/unescape not available or fails, try direct btoa
+        try { base64 = g.btoa(content); } catch { base64 = ''; }
+      }
+      if (!base64) {
+        // As a last resort, fall back to simple URL-encoded data URL
+        const encoded = encodeURIComponent(content);
+        link.href = `data:${mime},${encoded}`;
+      } else {
+        link.href = `data:${mime};base64,${base64}`;
+      }
       link.setAttribute('download', filename);
       link.style.display = 'none';
       doc.body.appendChild(link);
       link.click();
       try { doc.body.removeChild(link); } catch {}
+      try { console.debug('[CsvExportService] Data URL fallback path used.'); } catch {}
     } catch (e) {
       try { console.error('[CsvExportService] Failed to trigger download via fallback.', e); } catch {}
     }

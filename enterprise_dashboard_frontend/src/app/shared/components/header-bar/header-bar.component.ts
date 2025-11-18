@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../../core/services/theme.service';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom, take } from 'rxjs';
 import { CsvExportService } from '../../../core/services/csv-export.service';
 import { TableDataBridgeService } from '../../services/table-data-bridge.service';
 import { MetricsService, TableRow } from '../../../core/services/metrics.service';
@@ -77,12 +77,27 @@ export class HeaderBarComponent implements OnDestroy {
 
   // PUBLIC_INTERFACE
   exportCsv(): void {
+    try { console.debug('[HeaderBar] exportCsv() clicked'); } catch {}
     const rows = this.getCurrentRowsSnapshot();
     if (!rows.length) {
-      try { console.warn('[HeaderBar] Export CSV requested but no rows available.'); } catch {}
+      try { console.warn('[HeaderBar] Export CSV requested but no rows available. Attempting immediate fallback.'); } catch {}
+      // Attempt a quick one-shot pull from MetricsService observable as a last resort
+      this.tryFetchRowsOnce().then(fallbackRows => {
+        if (!fallbackRows.length) {
+          try { console.error('[HeaderBar] No data available for CSV export.'); } catch {}
+          return;
+        }
+        this.doCsvExport(fallbackRows);
+      }).catch(() => {
+        try { console.error('[HeaderBar] Fallback fetch failed; no data to export.'); } catch {}
+      });
       return;
     }
 
+    this.doCsvExport(rows);
+  }
+
+  private doCsvExport(rows: TableRow[]): void {
     this.csv.exportToCsv(rows, {
       filename: this.buildFilename('csv'),
       columns: [
@@ -94,6 +109,7 @@ export class HeaderBarComponent implements OnDestroy {
       ],
     });
     this.closeExport();
+    try { console.info('[HeaderBar] CSV download triggered. Rows:', rows.length); } catch {}
   }
 
   // PUBLIC_INTERFACE
@@ -102,13 +118,28 @@ export class HeaderBarComponent implements OnDestroy {
    * Uses CsvExportService helper for robust SSR-safe download.
    */
   exportJson(): void {
+    try { console.debug('[HeaderBar] exportJson() clicked'); } catch {}
     const rows = this.getCurrentRowsSnapshot();
     if (!rows.length) {
-      try { console.warn('[HeaderBar] Export JSON requested but no rows available.'); } catch {}
+      try { console.warn('[HeaderBar] Export JSON requested but no rows available. Attempting immediate fallback.'); } catch {}
+      this.tryFetchRowsOnce().then(fallbackRows => {
+        if (!fallbackRows.length) {
+          try { console.error('[HeaderBar] No data available for JSON export.'); } catch {}
+          return;
+        }
+        this.doJsonExport(fallbackRows);
+      }).catch(() => {
+        try { console.error('[HeaderBar] Fallback fetch failed; no data to export.'); } catch {}
+      });
       return;
     }
+    this.doJsonExport(rows);
+  }
+
+  private doJsonExport(rows: TableRow[]): void {
     this.csv.exportToJson(rows, { filename: this.buildFilename('json'), space: 2 });
     this.closeExport();
+    try { console.info('[HeaderBar] JSON download triggered. Rows:', rows.length); } catch {}
   }
 
   private getCurrentRowsSnapshot(): TableRow[] {
@@ -117,10 +148,27 @@ export class HeaderBarComponent implements OnDestroy {
     if (Array.isArray(fromBridge) && fromBridge.length) {
       return fromBridge;
     }
-    // Fallback: try to get last known dataset from MetricsService state via subscription one-shot (not ideal, but better than empty)
-    // Note: MetricsService does not expose a snapshot; the table publishes rows after data load, so this branch is rarely hit.
-    try { console.info('[HeaderBar] Falling back to empty dataset; table may not have published rows yet.'); } catch {}
+    try { console.info('[HeaderBar] Bridge has no rows snapshot yet.'); } catch {}
     return [];
+  }
+
+  /**
+   * Try to obtain rows quickly by tapping the MetricsService table observable once.
+   * This is a best-effort fallback to reduce cases where export is clicked right before
+   * the table publishes into the bridge.
+   */
+  private async tryFetchRowsOnce(): Promise<TableRow[]> {
+    try {
+      const state = await firstValueFrom(this.metrics.getTableData().pipe(take(1)));
+      const data = state?.data ?? [];
+      // Also publish to bridge so subsequent clicks see rows
+      if (Array.isArray(data)) {
+        this.tableBridge.setRows(data);
+      }
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
   }
 
   private buildFilename(ext: 'csv' | 'json'): string {
