@@ -1,5 +1,5 @@
-import { Component, computed, Signal } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { HeaderBarComponent } from './shared/components/header-bar/header-bar.component';
@@ -13,11 +13,5 @@ import { ThemeService } from './core/services/theme.service';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  constructor(private readonly themeService: ThemeService, private router: Router) {}
-
-  // PUBLIC_INTERFACE
-  isLoginRoute(): boolean {
-    const url = this.router.url || '';
-    return url.startsWith('/login');
-  }
+  constructor(private readonly themeService: ThemeService) {}
 }

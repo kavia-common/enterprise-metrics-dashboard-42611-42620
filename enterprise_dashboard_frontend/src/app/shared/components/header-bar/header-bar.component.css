@@ -76,25 +76,3 @@
   box-shadow: var(--shadow-sm);
   border-color: var(--primary);
 }
-
-.user {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-lg);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  text-decoration: none;
-}
-
-.user img {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-}
-
-.user .name {
-  color: var(--muted);
-  font-size: 0.9rem;
-}

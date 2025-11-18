@@ -5,12 +5,11 @@
   </header>
 
   <div class="grid">
-    <!-- User info -->
     <article class="card">
       <h3>Account</h3>
       <div class="row">
         <span class="label">Email</span>
-        <span class="value">{{ user()?.email }}</span>
+        <span class="value">{{ user()?.email || 'anonymous@example.com' }}</span>
       </div>
       <div class="row">
         <span class="label">Role</span>
@@ -22,7 +21,6 @@
       </div>
     </article>
 
-    <!-- Edit display name -->
     <article class="card">
       <h3>Display name</h3>
       <form [formGroup]="displayForm" (ngSubmit)="saveDisplayName()" novalidate>
@@ -42,7 +40,6 @@
       </form>
     </article>
 
-    <!-- Change password stub -->
     <article class="card">
       <h3>Change password</h3>
       <form [formGroup]="pwdForm" (ngSubmit)="submitPasswordChange()" novalidate>
