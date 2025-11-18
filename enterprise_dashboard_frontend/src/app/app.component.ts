@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { HeaderBarComponent } from './shared/components/header-bar/header-bar.component';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,7 @@ import { HeaderBarComponent } from './shared/components/header-bar/header-bar.co
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {}
+export class AppComponent {
+  // Ensure service initializes and remains active
+  constructor(private readonly themeService: ThemeService) {}
+}

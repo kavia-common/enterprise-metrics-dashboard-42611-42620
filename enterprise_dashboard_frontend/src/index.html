@@ -6,7 +6,23 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#2563EB">
+  <meta name="color-scheme" content="light dark">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Set initial theme class ASAP to avoid flash
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme'); // 'light' | 'dark'
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = saved === 'light' || saved === 'dark' ? saved : (prefersDark ? 'dark' : 'light');
+        var root = document.documentElement;
+        root.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+        root.setAttribute('data-color-scheme', theme);
+      } catch (e) {
+        // ignore
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

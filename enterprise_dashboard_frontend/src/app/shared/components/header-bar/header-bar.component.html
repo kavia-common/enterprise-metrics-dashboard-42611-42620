@@ -15,6 +15,11 @@
   </div>
   <div class="right">
     <button class="action" aria-label="Notifications" title="Notifications">🔔</button>
+    <button class="action" (click)="toggleTheme()"
+            [attr.aria-pressed]="theme === 'dark' ? 'true' : 'false'"
+            [title]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
+      {{ theme === 'dark' ? '🌙' : '☀️' }}
+    </button>
     <div class="user">
       <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="User avatar" />
       <span class="name">Alex</span>
