@@ -22,7 +22,7 @@
     </article>
 
     <article class="card">
-      <h3>Display name</h3>
+      <h3>Profile details</h3>
       <form [formGroup]="displayForm" (ngSubmit)="saveDisplayName()" novalidate>
         <div class="field">
           <label for="name">Name</label>
@@ -32,6 +32,35 @@
             <span *ngIf="displayForm.controls.name.errors?.['minlength']">Minimum 2 characters.</span>
           </div>
         </div>
+
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" formControlName="phone" placeholder="+1 (555) 123-4567" />
+          <div class="error" *ngIf="displayForm.controls.phone.touched && displayForm.controls.phone.invalid">
+            <span *ngIf="displayForm.controls.phone.errors?.['pattern']">Enter a valid phone number.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="department">Department</label>
+          <input id="department" type="text" formControlName="department" placeholder="e.g., Finance" />
+          <div class="error" *ngIf="displayForm.controls.department.touched && displayForm.controls.department.invalid">
+            <span *ngIf="displayForm.controls.department.errors?.['required']">Department is required.</span>
+            <span *ngIf="displayForm.controls.department.errors?.['minlength']">Minimum 2 characters.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="timezone">Timezone</label>
+          <select id="timezone" formControlName="timezone">
+            <option value="" disabled>Select a timezone</option>
+            <option *ngFor="let tz of timezones()" [value]="tz">{{ tz }}</option>
+          </select>
+          <div class="error" *ngIf="displayForm.controls.timezone.touched && displayForm.controls.timezone.invalid">
+            <span *ngIf="displayForm.controls.timezone.errors?.['required']">Timezone is required.</span>
+          </div>
+        </div>
+
         <div class="actions">
           <button class="btn btn-primary" type="submit">Save</button>
         </div>
