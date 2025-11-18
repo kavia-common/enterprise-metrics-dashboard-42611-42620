@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnDestroy, HostListener, ElementRef, signal, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../../core/services/theme.service';
 import { Subscription, firstValueFrom, take } from 'rxjs';
@@ -23,6 +23,9 @@ export class HeaderBarComponent implements OnDestroy {
   exportOpen = false;
   hasRows = false;
 
+  // Inline feedback message displayed beneath the Export button/menu
+  exportMessage = signal<string | null>(null);
+
   private bridgeSub?: Subscription;
 
   constructor(
@@ -38,6 +41,12 @@ export class HeaderBarComponent implements OnDestroy {
     // Track if there are rows available for export
     this.bridgeSub = this.tableBridge.getRows$().subscribe(rows => {
       this.hasRows = Array.isArray(rows) && rows.length > 0;
+      if (!this.hasRows) {
+        // Visible hint to users if they open export with zero rows
+        this.setExportMessage('No data available yet. Please wait for the table to load.');
+      } else {
+        this.setExportMessage(null);
+      }
     });
   }
 
@@ -52,9 +61,17 @@ export class HeaderBarComponent implements OnDestroy {
 
   toggleExportMenu(): void {
     this.exportOpen = !this.exportOpen;
+    if (this.exportOpen && !this.hasRows) {
+      this.setExportMessage('No data available yet. Please wait for the table to load.');
+    }
   }
   closeExport(): void {
     this.exportOpen = false;
+  }
+
+  private setExportMessage(msg: string | null): void {
+    try { console.info('[HeaderBar] export message:', msg); } catch {}
+    this.exportMessage.set(msg);
   }
 
   // Close on outside click (browser only; host listener is safe in Angular SSR)
@@ -77,37 +94,48 @@ export class HeaderBarComponent implements OnDestroy {
 
   // PUBLIC_INTERFACE
   exportCsv(): void {
-    try { console.debug('[HeaderBar] exportCsv() clicked'); } catch {}
+    try { console.info('[HeaderBar] exportCsv() clicked'); } catch {}
     const rows = this.getCurrentRowsSnapshot();
     if (!rows.length) {
       try { console.warn('[HeaderBar] Export CSV requested but no rows available. Attempting immediate fallback.'); } catch {}
+      this.setExportMessage('Preparing data for export…');
       // Attempt a quick one-shot pull from MetricsService observable as a last resort
       this.tryFetchRowsOnce().then(fallbackRows => {
         if (!fallbackRows.length) {
           try { console.error('[HeaderBar] No data available for CSV export.'); } catch {}
+          this.setExportMessage('Export blocked: no rows to download.');
           return;
         }
+        this.setExportMessage(null);
         this.doCsvExport(fallbackRows);
       }).catch(() => {
         try { console.error('[HeaderBar] Fallback fetch failed; no data to export.'); } catch {}
+        this.setExportMessage('Export failed while preparing data.');
       });
       return;
     }
 
+    this.setExportMessage(null);
     this.doCsvExport(rows);
   }
 
   private doCsvExport(rows: TableRow[]): void {
-    this.csv.exportToCsv(rows, {
-      filename: this.buildFilename('csv'),
-      columns: [
-        { key: 'id', header: 'ID' },
-        { key: 'name', header: 'Client' },
-        { key: 'status', header: 'Status' },
-        { key: 'amount', header: 'Amount' },
-        { key: 'date', header: 'Date' },
-      ],
-    });
+    try {
+      this.csv.exportToCsv(rows, {
+        filename: this.buildFilename('csv'),
+        columns: [
+          { key: 'id', header: 'ID' },
+          { key: 'name', header: 'Client' },
+          { key: 'status', header: 'Status' },
+          { key: 'amount', header: 'Amount' },
+          { key: 'date', header: 'Date' },
+        ],
+      });
+    } catch (e) {
+      try { console.error('[HeaderBar] CSV export error:', e); } catch {}
+      this.setExportMessage('Export failed in browser. Please check pop-up/download blockers.');
+      return;
+    }
     this.closeExport();
     try { console.info('[HeaderBar] CSV download triggered. Rows:', rows.length); } catch {}
   }
@@ -118,26 +146,37 @@ export class HeaderBarComponent implements OnDestroy {
    * Uses CsvExportService helper for robust SSR-safe download.
    */
   exportJson(): void {
-    try { console.debug('[HeaderBar] exportJson() clicked'); } catch {}
+    try { console.info('[HeaderBar] exportJson() clicked'); } catch {}
     const rows = this.getCurrentRowsSnapshot();
     if (!rows.length) {
       try { console.warn('[HeaderBar] Export JSON requested but no rows available. Attempting immediate fallback.'); } catch {}
+      this.setExportMessage('Preparing data for export…');
       this.tryFetchRowsOnce().then(fallbackRows => {
         if (!fallbackRows.length) {
           try { console.error('[HeaderBar] No data available for JSON export.'); } catch {}
+          this.setExportMessage('Export blocked: no rows to download.');
           return;
         }
+        this.setExportMessage(null);
         this.doJsonExport(fallbackRows);
       }).catch(() => {
         try { console.error('[HeaderBar] Fallback fetch failed; no data to export.'); } catch {}
+        this.setExportMessage('Export failed while preparing data.');
       });
       return;
     }
+    this.setExportMessage(null);
     this.doJsonExport(rows);
   }
 
   private doJsonExport(rows: TableRow[]): void {
-    this.csv.exportToJson(rows, { filename: this.buildFilename('json'), space: 2 });
+    try {
+      this.csv.exportToJson(rows, { filename: this.buildFilename('json'), space: 2 });
+    } catch (e) {
+      try { console.error('[HeaderBar] JSON export error:', e); } catch {}
+      this.setExportMessage('Export failed in browser. Please check pop-up/download blockers.');
+      return;
+    }
     this.closeExport();
     try { console.info('[HeaderBar] JSON download triggered. Rows:', rows.length); } catch {}
   }

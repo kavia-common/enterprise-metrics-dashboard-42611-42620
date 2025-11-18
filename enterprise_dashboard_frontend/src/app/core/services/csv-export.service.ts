@@ -7,7 +7,10 @@ import { Injectable } from '@angular/core';
  * - CSV: proper header ordering, field escaping, UTF-8 BOM, correct MIME.
  * - JSON: pretty-printed, UTF-8 BOM, correct MIME.
  *
- * Includes a robust download helper that appends a temporary <a>, clicks it, then cleans up and revokes the URL.
+ * Centralized robust download helper:
+ *   1) Prefer Blob + URL.createObjectURL + temporary <a> + revokeObjectURL
+ *   2) Fallback to data: URLs with base64 when Blob/URL unavailable
+ *   3) SSR-safe guards for window/document
  */
 @Injectable({ providedIn: 'root' })
 export class CsvExportService {

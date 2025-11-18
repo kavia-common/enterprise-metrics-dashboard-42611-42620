@@ -51,6 +51,10 @@
           </button>
         </li>
       </ul>
+      <!-- Inline feedback message for export issues or hints -->
+      <div *ngIf="exportMessage()" style="margin-top: 0.25rem; font-size: 0.85rem; color: var(--muted);">
+        {{ exportMessage() }}
+      </div>
     </div>
 
     <button class="action" aria-label="Notifications" title="Notifications">🔔</button>
