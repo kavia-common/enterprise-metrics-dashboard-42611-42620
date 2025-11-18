@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MetricsService, TableRow } from '../../core/services/metrics.service';
 import { map } from 'rxjs/operators';
 import { CsvExportService } from '../../core/services/csv-export.service';
+import { TableDataBridgeService } from '../../shared/services/table-data-bridge.service';
 
 @Component({
   selector: 'app-table-widget',
@@ -17,12 +18,19 @@ export class TableWidgetComponent {
   error = signal<string | null>(null);
   rows = signal<TableRow[]>([]);
 
-  constructor(private metrics: MetricsService, private csv: CsvExportService) {
+  constructor(
+    private metrics: MetricsService,
+    private csv: CsvExportService,
+    private tableBridge: TableDataBridgeService
+  ) {
     this.metrics.getTableData().pipe(
       map((state) => {
         this.loading.set(state.loading);
         this.error.set(state.error ?? null);
-        this.rows.set(state.data ?? []);
+        const data = state.data ?? [];
+        this.rows.set(data);
+        // Publish to bridge so header can export current displayed rows
+        this.tableBridge.setRows(data);
       })
     ).subscribe();
   }

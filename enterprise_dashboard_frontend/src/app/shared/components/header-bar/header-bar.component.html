@@ -14,6 +14,35 @@
     </div>
   </div>
   <div class="right">
+    <div class="dropdown" [class.open]="exportOpen" (keyup.escape)="closeExport()">
+      <button
+        class="action"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="exportOpen ? 'true' : 'false'"
+        aria-controls="export-menu"
+        title="Export data"
+        (click)="toggleExportMenu()">
+        ⬇ Export
+      </button>
+      <ul
+        id="export-menu"
+        class="menu"
+        *ngIf="exportOpen"
+        role="menu"
+        (click)="$event.stopPropagation()">
+        <li role="none">
+          <button role="menuitem" class="menu-item" (click)="exportCsv()" [disabled]="!hasRows">
+            CSV
+          </button>
+        </li>
+        <li role="none">
+          <button role="menuitem" class="menu-item" (click)="exportJson()" [disabled]="!hasRows">
+            JSON
+          </button>
+        </li>
+      </ul>
+    </div>
+
     <button class="action" aria-label="Notifications" title="Notifications">🔔</button>
     <button class="action" (click)="toggleTheme()"
             [attr.aria-pressed]="theme === 'dark' ? 'true' : 'false'"
