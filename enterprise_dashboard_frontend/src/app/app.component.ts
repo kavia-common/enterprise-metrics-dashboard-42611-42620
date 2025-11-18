@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, computed, Signal } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { HeaderBarComponent } from './shared/components/header-bar/header-bar.component';
 import { ThemeService } from './core/services/theme.service';
@@ -7,11 +8,16 @@ import { ThemeService } from './core/services/theme.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, HeaderBarComponent],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, HeaderBarComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  // Ensure service initializes and remains active
-  constructor(private readonly themeService: ThemeService) {}
+  constructor(private readonly themeService: ThemeService, private router: Router) {}
+
+  // PUBLIC_INTERFACE
+  isLoginRoute(): boolean {
+    const url = this.router.url || '';
+    return url.startsWith('/login');
+  }
 }

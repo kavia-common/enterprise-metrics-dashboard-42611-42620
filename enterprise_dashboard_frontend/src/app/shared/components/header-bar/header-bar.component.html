@@ -20,9 +20,16 @@
             [title]="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
       {{ theme === 'dark' ? '🌙' : '☀️' }}
     </button>
-    <div class="user">
-      <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="User avatar" />
-      <span class="name">Alex</span>
-    </div>
+
+    <ng-container *ngIf="user; else loginBtn">
+      <div class="user" title="Account">
+        <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="User avatar" />
+        <span class="name">{{ user.name }}</span>
+      </div>
+      <button class="action" (click)="logout()" aria-label="Logout" title="Logout">⎋</button>
+    </ng-container>
+    <ng-template #loginBtn>
+      <a class="action" routerLink="/login" aria-label="Login" title="Login">Login</a>
+    </ng-template>
   </div>
 </header>

@@ -1,4 +1,5 @@
-<div class="container-app">
+<router-outlet *ngIf="isLoginRoute()"></router-outlet>
+<div class="container-app" *ngIf="!isLoginRoute()">
   <app-sidebar></app-sidebar>
   <div class="main-column">
     <app-header-bar [title]="'Enterprise Dashboard'"></app-header-bar>
