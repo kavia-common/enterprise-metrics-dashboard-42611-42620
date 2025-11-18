@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnDestroy, HostListener } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../../core/services/theme.service';
 import { Subscription } from 'rxjs';
@@ -27,7 +27,8 @@ export class HeaderBarComponent implements OnDestroy {
   constructor(
     private themeService: ThemeService,
     private csv: CsvExportService,
-    private tableBridge: TableDataBridgeService
+    private tableBridge: TableDataBridgeService,
+    private hostRef: ElementRef<HTMLElement>
   ) {
     this.theme = this.themeService.getTheme();
     this.sub = this.themeService.themeChanges().subscribe((t) => (this.theme = t));
@@ -56,8 +57,18 @@ export class HeaderBarComponent implements OnDestroy {
 
   // Close on outside click (browser only; host listener is safe in Angular SSR)
   @HostListener('document:click', ['$event'])
-  onDocClick(): void {
-    if (this.exportOpen) {
+  onDocClick(ev: any): void {
+    if (!this.exportOpen) return;
+    try {
+      // Close only if click is outside this component root
+      const root: any = this.hostRef?.nativeElement;
+      const target: any = ev?.target;
+      const contains = root && target && typeof root.contains === 'function' ? root.contains(target) : false;
+      if (!contains) {
+        this.exportOpen = false;
+      }
+    } catch {
+      // Fallback: close
       this.exportOpen = false;
     }
   }
@@ -65,7 +76,10 @@ export class HeaderBarComponent implements OnDestroy {
   // PUBLIC_INTERFACE
   exportCsv(): void {
     const rows = this.tableBridge.getSnapshot();
-    if (!rows || rows.length === 0) return;
+    if (!rows || rows.length === 0) {
+      try { console.warn('[HeaderBar] Export CSV requested but no rows available.'); } catch {}
+      return;
+    }
 
     this.csv.exportToCsv(rows, {
       filename: this.buildFilename('csv'),
@@ -87,7 +101,10 @@ export class HeaderBarComponent implements OnDestroy {
    */
   exportJson(): void {
     const rows = this.tableBridge.getSnapshot();
-    if (!rows || rows.length === 0) return;
+    if (!rows || rows.length === 0) {
+      try { console.warn('[HeaderBar] Export JSON requested but no rows available.'); } catch {}
+      return;
+    }
 
     let json = '';
     try {
@@ -121,6 +138,7 @@ export class HeaderBarComponent implements OnDestroy {
     const hasSetTimeout = typeof g.setTimeout === 'function';
 
     if (!win || !doc || !hasURL || !hasBlobCtor) {
+      try { console.warn('[HeaderBar] Download not supported in this environment (SSR or missing APIs).'); } catch {}
       return; // SSR or unsupported
     }
     try {

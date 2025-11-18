@@ -14,14 +14,14 @@
     </div>
   </div>
   <div class="right">
-    <div class="dropdown" [class.open]="exportOpen" (keyup.escape)="closeExport()">
+    <div class="dropdown" [class.open]="exportOpen" (keyup.escape)="closeExport()" (click)="$event.stopPropagation()">
       <button
         class="action"
         aria-haspopup="menu"
         [attr.aria-expanded]="exportOpen ? 'true' : 'false'"
         aria-controls="export-menu"
         title="Export data"
-        (click)="toggleExportMenu()">
+        (click)="toggleExportMenu(); $event.stopPropagation()">
         ⬇ Export
       </button>
       <ul
@@ -31,12 +31,12 @@
         role="menu"
         (click)="$event.stopPropagation()">
         <li role="none">
-          <button role="menuitem" class="menu-item" (click)="exportCsv()" [disabled]="!hasRows">
+          <button role="menuitem" class="menu-item" (click)="exportCsv(); $event.stopPropagation()" [disabled]="!hasRows">
             CSV
           </button>
         </li>
         <li role="none">
-          <button role="menuitem" class="menu-item" (click)="exportJson()" [disabled]="!hasRows">
+          <button role="menuitem" class="menu-item" (click)="exportJson(); $event.stopPropagation()" [disabled]="!hasRows">
             JSON
           </button>
         </li>
