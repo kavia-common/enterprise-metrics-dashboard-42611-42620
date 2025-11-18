@@ -22,10 +22,10 @@
     </button>
 
     <ng-container *ngIf="user; else loginBtn">
-      <div class="user" title="Account">
+      <a class="user" title="Account" routerLink="/profile">
         <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="User avatar" />
         <span class="name">{{ user.name }}</span>
-      </div>
+      </a>
       <button class="action" (click)="logout()" aria-label="Logout" title="Logout">⎋</button>
     </ng-container>
     <ng-template #loginBtn>

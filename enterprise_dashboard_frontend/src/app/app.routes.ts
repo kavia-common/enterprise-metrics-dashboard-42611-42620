@@ -4,6 +4,7 @@ import { ReportsPageComponent } from './features/reports/reports.page';
 import { SettingsPageComponent } from './features/settings/settings.page';
 import { LoginPageComponent } from './features/login/login.page';
 import { authGuard } from './core/guards/auth.guard';
+import { ProfilePageComponent } from './features/profile/profile.page';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -11,5 +12,6 @@ export const routes: Routes = [
   { path: 'dashboard', canActivate: [authGuard], loadComponent: () => Promise.resolve(DashboardPageComponent) },
   { path: 'reports', canActivate: [authGuard], loadComponent: () => Promise.resolve(ReportsPageComponent) },
   { path: 'settings', canActivate: [authGuard], loadComponent: () => Promise.resolve(SettingsPageComponent) },
+  { path: 'profile', canActivate: [authGuard], loadComponent: () => Promise.resolve(ProfilePageComponent) },
   { path: '**', redirectTo: 'dashboard' }
 ];

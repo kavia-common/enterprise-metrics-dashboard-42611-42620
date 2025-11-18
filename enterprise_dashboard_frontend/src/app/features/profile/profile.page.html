@@ -1,0 +1,85 @@
+<section class="profile">
+  <header class="page-header">
+    <h2>Profile</h2>
+    <p class="subtitle">Manage your account information and preferences.</p>
+  </header>
+
+  <div class="grid">
+    <!-- User info -->
+    <article class="card">
+      <h3>Account</h3>
+      <div class="row">
+        <span class="label">Email</span>
+        <span class="value">{{ user()?.email }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Role</span>
+        <span class="value">{{ user()?.role || '—' }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Theme</span>
+        <span class="value"><span class="chip">{{ theme === 'dark' ? 'Dark' : 'Light' }}</span></span>
+      </div>
+    </article>
+
+    <!-- Edit display name -->
+    <article class="card">
+      <h3>Display name</h3>
+      <form [formGroup]="displayForm" (ngSubmit)="saveDisplayName()" novalidate>
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" type="text" formControlName="name" placeholder="Your name" />
+          <div class="error" *ngIf="displayForm.controls.name.touched && displayForm.controls.name.invalid">
+            <span *ngIf="displayForm.controls.name.errors?.['required']">Name is required.</span>
+            <span *ngIf="displayForm.controls.name.errors?.['minlength']">Minimum 2 characters.</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Save</button>
+        </div>
+        <p class="msg success" *ngIf="nameSaveSuccess()">{{ nameSaveSuccess() }}</p>
+        <p class="msg error" *ngIf="nameSaveError()">{{ nameSaveError() }}</p>
+      </form>
+    </article>
+
+    <!-- Change password stub -->
+    <article class="card">
+      <h3>Change password</h3>
+      <form [formGroup]="pwdForm" (ngSubmit)="submitPasswordChange()" novalidate>
+        <div class="field">
+          <label for="current">Current password</label>
+          <input id="current" type="password" formControlName="current" placeholder="••••••••" />
+          <div class="error" *ngIf="pwdForm.controls.current.touched && pwdForm.controls.current.invalid">
+            <span *ngIf="pwdForm.controls.current.errors?.['required']">Current password is required.</span>
+            <span *ngIf="pwdForm.controls.current.errors?.['minlength']">Minimum 4 characters.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="next">New password</label>
+          <input id="next" type="password" formControlName="next" placeholder="New password" />
+          <div class="error" *ngIf="pwdForm.controls.next.touched && pwdForm.controls.next.invalid">
+            <span *ngIf="pwdForm.controls.next.errors?.['required']">New password is required.</span>
+            <span *ngIf="pwdForm.controls.next.errors?.['minlength']">Minimum 4 characters.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="confirm">Confirm new password</label>
+          <input id="confirm" type="password" formControlName="confirm" placeholder="Confirm new password" />
+          <div class="error" *ngIf="pwdForm.controls.confirm.touched && pwdForm.controls.confirm.invalid">
+            <span *ngIf="pwdForm.controls.confirm.errors?.['required']">Confirmation is required.</span>
+            <span *ngIf="pwdForm.controls.confirm.errors?.['minlength']">Minimum 4 characters.</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Change password</button>
+        </div>
+        <p class="msg success" *ngIf="pwdMessage()?.type === 'success'">{{ pwdMessage()?.text }}</p>
+        <p class="msg error" *ngIf="pwdMessage()?.type === 'error'">{{ pwdMessage()?.text }}</p>
+      </form>
+      <p class="hint">Note: This is a mock change password. No API calls are made.</p>
+    </article>
+  </div>
+</section>
