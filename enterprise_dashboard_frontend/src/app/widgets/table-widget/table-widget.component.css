@@ -10,6 +10,21 @@
   padding: 0.25rem;
 }
 
+.card-header .btn {
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.10), rgba(249, 250, 251, 0.08));
+  color: var(--text);
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-header .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--primary);
+}
+
 h3 {
   color: var(--text);
   font-size: 1.05rem;

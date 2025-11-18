@@ -1,6 +1,9 @@
 <article class="card" [attr.aria-busy]="loading() ? 'true' : 'false'">
-  <header class="card-header">
+  <header class="card-header" style="display:flex; align-items:center; justify-content:space-between; gap: .5rem;">
     <h3>{{ title }}</h3>
+    <button class="btn" (click)="exportCsv()" [disabled]="loading() || (rows().length === 0)" aria-label="Export table as CSV" title="Export CSV">
+      ⬇ Export CSV
+    </button>
   </header>
   <section class="card-body">
     <div *ngIf="loading()" class="state">Loading table…</div>

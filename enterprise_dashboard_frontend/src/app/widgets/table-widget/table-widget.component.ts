@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MetricsService, TableRow } from '../../core/services/metrics.service';
 import { map } from 'rxjs/operators';
+import { CsvExportService } from '../../core/services/csv-export.service';
 
 @Component({
   selector: 'app-table-widget',
@@ -16,7 +17,7 @@ export class TableWidgetComponent {
   error = signal<string | null>(null);
   rows = signal<TableRow[]>([]);
 
-  constructor(private metrics: MetricsService) {
+  constructor(private metrics: MetricsService, private csv: CsvExportService) {
     this.metrics.getTableData().pipe(
       map((state) => {
         this.loading.set(state.loading);
@@ -33,5 +34,34 @@ export class TableWidgetComponent {
       case 'Overdue': return 'chip chip-danger';
       default: return 'chip';
     }
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Export current dataset as CSV. Uses displayed rows (could be filtered/sorted in future).
+   * SSR-safe: CsvExportService handles environment checks before triggering a download.
+   */
+  exportCsv(): void {
+    const data = this.rows() ?? [];
+    if (!data.length) return;
+
+    this.csv.exportToCsv(data, {
+      columns: [
+        { key: 'id', header: 'ID' },
+        { key: 'name', header: 'Client' },
+        { key: 'status', header: 'Status' },
+        { key: 'amount', header: 'Amount' },
+        { key: 'date', header: 'Date' },
+      ],
+      filename: this.buildFilename(),
+    });
+  }
+
+  private buildFilename(): string {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `metrics_export_${yyyy}-${mm}-${dd}.csv`;
   }
 }
