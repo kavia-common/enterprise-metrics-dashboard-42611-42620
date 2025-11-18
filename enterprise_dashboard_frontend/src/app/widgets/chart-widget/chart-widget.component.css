@@ -1,0 +1,33 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+.card-header {
+  padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+}
+
+h3 {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.card-body {
+  padding: 0.25rem;
+}
+
+.state {
+  color: var(--muted);
+  padding: 0.75rem;
+}
+
+.state.error {
+  color: var(--error);
+}
+
+.chart {
+  padding: 0.25rem;
+}

@@ -1,0 +1,21 @@
+<article class="card" [attr.aria-busy]="loading() ? 'true' : 'false'">
+  <header class="card-header">
+    <h3>{{ title }}</h3>
+  </header>
+  <section class="card-body">
+    <div *ngIf="loading()" class="state">Loading chart…</div>
+    <div *ngIf="!loading() && error()" class="state error">Error: {{ error() }}</div>
+    <div *ngIf="!loading() && !error()" class="chart">
+      <svg width="100%" height="200" viewBox="0 0 500 200" role="img" aria-label="Performance trend">
+        <defs>
+          <linearGradient id="fillGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(37,99,235,0.25)"/>
+            <stop offset="100%" stop-color="rgba(37,99,235,0.02)"/>
+          </linearGradient>
+        </defs>
+        <polyline [attr.points]="points()" fill="none" stroke="var(--primary)" stroke-width="3"/>
+        <polygon [attr.points]="points() + ' 500,200 0,200'" fill="url(#fillGradient)" />
+      </svg>
+    </div>
+  </section>
+</article>

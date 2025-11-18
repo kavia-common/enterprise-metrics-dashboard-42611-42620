@@ -1,0 +1,14 @@
+<section class="dashboard">
+  <div class="kpi-grid" role="list">
+    <article class="kpi-card" role="listitem" *ngFor="let k of kpis">
+      <div class="kpi-title">{{ k.title }}</div>
+      <div class="kpi-value">{{ k.value }}</div>
+      <div class="kpi-badge">{{ k.badge }}</div>
+    </article>
+  </div>
+
+  <div class="widgets-grid">
+    <app-chart-widget></app-chart-widget>
+    <app-table-widget></app-table-widget>
+  </div>
+</section>

@@ -1,59 +1,66 @@
-# Angular
+# Angular Enterprise Dashboard (Frontend)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.1.
+Modern Angular 19 app implementing the "Ocean Professional" theme with a responsive layout:
+- Left sidebar navigation
+- Top header bar with search and user menu
+- Main content area with a responsive grid for widgets (charts, tables)
 
-## Development server
-
-To start a local development server, run:
+## Running locally
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The dev server runs at `http://localhost:3000/` (configured in `angular.json`). Hot reload is enabled.
 
-## Code scaffolding
+## Routes
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- `/dashboard` (default): KPI cards, a chart widget and a table widget (mock data)
+- `/reports`: Placeholder page for reports
+- `/settings`: Placeholder page for settings
 
-```bash
-ng generate component component-name
-```
+## Theming
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Theme variables are defined in `src/styles.css` as CSS variables:
 
-```bash
-ng generate --help
-```
+- `--primary: #2563EB`
+- `--secondary / --success: #F59E0B`
+- `--error: #EF4444`
+- `--bg: #f9fafb`, `--surface: #ffffff`
+- `--text: #111827`
 
-## Building
+These are applied throughout components along with shadows, rounded corners, and gradient accents.
 
-To build the project run:
+## Environment configuration
 
-```bash
-ng build
-```
+Environment values are read via `process.env` with the `NG_APP_*` prefix:
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- `NG_APP_API_BASE`
+- `NG_APP_BACKEND_URL`
+- `NG_APP_WS_URL`
 
-## Running unit tests
+`EnvConfigService` centralizes access to these values. Current implementation uses mock data by default in `MetricsService`. To switch to real APIs, set `useMock = false` and ensure `NG_APP_API_BASE` or `NG_APP_BACKEND_URL` is configured in your environment.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Note: The CI/build environment should make `process.env.NG_APP_*` available at build time. No new env vars were introduced.
 
-```bash
-ng test
-```
+## Widgets
 
-## Running end-to-end tests
+- `ChartWidgetComponent`: Simple SVG area/line placeholder using mock time-series data.
+- `TableWidgetComponent`: Accessible grid-like table with status chips and responsive layout.
 
-For end-to-end (e2e) testing, run:
+Both widgets display loading and error states and consume data from `MetricsService` (which uses a lightweight `BehaviorSubject` state).
 
-```bash
-ng e2e
-```
+### Extending widgets
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- Create a new component under `src/app/widgets/<your-widget>/`.
+- Inject `MetricsService` (or another dedicated service) to fetch data.
+- Show loading/error states similarly to existing widgets.
+- Add your widget to any page’s grid (e.g., `DashboardPage`).
 
-## Additional Resources
+## Structure
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `src/app/shared/components/`: `HeaderBar`, `Sidebar`
+- `src/app/features/`: `dashboard`, `reports`, `settings`
+- `src/app/widgets/`: `chart-widget`, `table-widget`
+- `src/app/core/services/`: `env-config.service.ts`, `metrics.service.ts`
+

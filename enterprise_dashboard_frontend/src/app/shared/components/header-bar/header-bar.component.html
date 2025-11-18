@@ -1,0 +1,23 @@
+<header class="header">
+  <div class="left">
+    <div class="brand">
+      <span class="logo">⦿</span>
+      <span class="title">{{ title }}</span>
+    </div>
+    <div class="search">
+      <input
+        #searchBox
+        type="search"
+        placeholder="Search..."
+        (input)="onSearch(searchBox.value)"
+        aria-label="Search dashboard">
+    </div>
+  </div>
+  <div class="right">
+    <button class="action" aria-label="Notifications" title="Notifications">🔔</button>
+    <div class="user">
+      <img src="https://avatars.githubusercontent.com/u/0?v=4" alt="User avatar" />
+      <span class="name">Alex</span>
+    </div>
+  </div>
+</header>

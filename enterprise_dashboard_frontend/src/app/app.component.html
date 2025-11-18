@@ -1,3 +1,9 @@
-<div class="container">
-  <h1>{{ title }}</h1>
+<div class="container-app">
+  <app-sidebar></app-sidebar>
+  <div class="main-column">
+    <app-header-bar [title]="'Enterprise Dashboard'"></app-header-bar>
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 </div>

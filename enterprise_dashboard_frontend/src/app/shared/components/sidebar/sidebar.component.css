@@ -1,0 +1,54 @@
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 0.75rem;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease, color 0.2s ease, transform 0.08s ease;
+}
+
+a:hover {
+  background: var(--bg);
+  transform: translateX(2px);
+}
+
+a.active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(245, 158, 11, 0.06));
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+}
+
+.icon {
+  width: 1.25rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 72px;
+    padding: 0.75rem 0.5rem;
+  }
+  a span:not(.icon) {
+    display: none;
+  }
+}

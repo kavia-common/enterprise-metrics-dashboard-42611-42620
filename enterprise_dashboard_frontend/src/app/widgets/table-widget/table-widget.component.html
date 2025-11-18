@@ -1,0 +1,32 @@
+<article class="card" [attr.aria-busy]="loading() ? 'true' : 'false'">
+  <header class="card-header">
+    <h3>{{ title }}</h3>
+  </header>
+  <section class="card-body">
+    <div *ngIf="loading()" class="state">Loading table…</div>
+    <div *ngIf="!loading() && error()" class="state error">Error: {{ error() }}</div>
+
+    <div *ngIf="!loading() && !error()">
+      <div class="table" role="table" aria-label="Recent Invoices">
+        <div class="thead" role="rowgroup">
+          <div class="tr" role="row">
+            <div class="th" role="columnheader">ID</div>
+            <div class="th" role="columnheader">Client</div>
+            <div class="th" role="columnheader">Status</div>
+            <div class="th right" role="columnheader">Amount</div>
+            <div class="th" role="columnheader">Date</div>
+          </div>
+        </div>
+        <div class="tbody" role="rowgroup">
+          <div class="tr" role="row" *ngFor="let r of rows()">
+            <div class="td" role="cell">{{ r.id }}</div>
+            <div class="td" role="cell">{{ r.name }}</div>
+            <div class="td" role="cell"><span [class]="statusClass(r.status)">{{ r.status }}</span></div>
+            <div class="td right" role="cell">{{ r.amount | currency:'USD':'symbol' }}</div>
+            <div class="td" role="cell">{{ r.date }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</article>

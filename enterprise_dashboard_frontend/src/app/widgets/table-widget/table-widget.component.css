@@ -1,0 +1,82 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+.card-header {
+  padding: 0.25rem;
+}
+
+h3 {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.card-body {
+  padding: 0.25rem;
+}
+
+.state {
+  color: var(--muted);
+  padding: 0.75rem;
+}
+.state.error { color: var(--error); }
+
+.table {
+  width: 100%;
+}
+.thead .tr, .tbody .tr {
+  display: grid;
+  grid-template-columns: 1.2fr 1.6fr 1fr 1.2fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem;
+  align-items: center;
+}
+.thead {
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.tbody .tr {
+  border-bottom: 1px solid var(--border);
+}
+.td.right, .th.right {
+  text-align: right;
+}
+.chip {
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--bg);
+  font-size: 0.8rem;
+}
+.chip-success {
+  color: var(--success);
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.06);
+}
+.chip-warning {
+  color: var(--primary);
+  border-color: rgba(37, 99, 235, 0.45);
+  background: rgba(37, 99, 235, 0.06);
+}
+.chip-danger {
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+@media (max-width: 600px) {
+  .thead { display: none; }
+  .tbody .tr {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tbody .tr .td:nth-child(1)::before { content: 'ID: '; color: var(--muted); }
+  .tbody .tr .td:nth-child(2)::before { content: 'Client: '; color: var(--muted); }
+  .tbody .tr .td:nth-child(3)::before { content: 'Status: '; color: var(--muted); }
+  .tbody .tr .td:nth-child(4)::before { content: 'Amount: '; color: var(--muted); }
+  .tbody .tr .td:nth-child(5)::before { content: 'Date: '; color: var(--muted); }
+}
