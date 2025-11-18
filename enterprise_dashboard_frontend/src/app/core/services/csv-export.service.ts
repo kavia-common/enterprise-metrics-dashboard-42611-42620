@@ -3,10 +3,11 @@ import { Injectable } from '@angular/core';
 /**
  * PUBLIC_INTERFACE
  * CsvExportService
- * Generates a CSV string from an array of objects with proper header generation, field escaping,
- * and includes UTF-8 BOM for Excel compatibility. Also triggers a download (browser environments only).
+ * Generates CSV or JSON strings and triggers downloads in browser with SSR-safe guards.
+ * - CSV: proper header ordering, field escaping, UTF-8 BOM, correct MIME.
+ * - JSON: pretty-printed, UTF-8 BOM, correct MIME.
  *
- * SSR-safe: guards access to window/document/URL/Blob before use.
+ * Includes a robust download helper that appends a temporary <a>, clicks it, then cleans up and revokes the URL.
  */
 @Injectable({ providedIn: 'root' })
 export class CsvExportService {
@@ -40,7 +41,30 @@ export class CsvExportService {
     const bom = '\uFEFF';
     const content = bom + csv;
 
-    this.triggerDownload(content, filename || this.defaultFilename());
+    this.triggerDownload(content, filename || this.defaultFilename('csv'), 'text/csv;charset=utf-8');
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Export the provided data array as a JSON file with UTF-8 BOM and pretty printed content.
+   */
+  exportToJson(
+    data: Array<Record<string, any>>,
+    options?: {
+      filename?: string;
+      space?: number;
+    }
+  ): void {
+    let json = '';
+    try {
+      json = JSON.stringify(Array.isArray(data) ? data : [], null, options?.space ?? 2);
+    } catch (e) {
+      try { console.warn('[CsvExportService] Failed to stringify JSON for export:', e); } catch {}
+      json = String(data as any);
+    }
+    // Prepend UTF-8 BOM
+    const content = '\uFEFF' + json;
+    this.triggerDownload(content, options?.filename || this.defaultFilename('json'), 'application/json;charset=utf-8');
   }
 
   private resolveColumns(
@@ -92,66 +116,84 @@ export class CsvExportService {
     return escaped;
   }
 
-  private defaultFilename(): string {
+  private defaultFilename(ext: 'csv' | 'json'): string {
     const d = new Date();
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
-    return `metrics_export_${yyyy}-${mm}-${dd}.csv`;
+    return `metrics_export_${yyyy}-${mm}-${dd}.${ext}`;
   }
 
-  private triggerDownload(content: string, filename: string): void {
+  /**
+   * Robust SSR-safe download helper:
+   * - Checks for Blob and URL support
+   * - Creates object URL and a temporary anchor
+   * - Appends to DOM, clicks, then removes and revokes the URL
+   * - Falls back to data: URL when Blob/URL is unavailable
+   */
+  private triggerDownload(content: string, filename: string, mime: string): void {
     const g: any = typeof globalThis !== 'undefined' ? (globalThis as any) : ({} as any);
     const win: any = g.window;
     const doc: any = g.document;
 
-    // SSR and environment guards using globalThis to satisfy linter and runtime
     const hasBlobCtor = !!(g && g.Blob);
     const hasURL = !!(win && (win.URL || (win as any).webkitURL));
     const hasSetTimeout = typeof g.setTimeout === 'function';
 
-    if (!win || !doc || !hasURL || !hasBlobCtor) {
-      // In SSR, just no-op
+    if (!win || !doc) {
+      try { console.warn('[CsvExportService] Download not supported (no window/document, SSR).'); } catch {}
       return;
     }
 
-    try {
-      const blob = new g.Blob([content], { type: 'text/csv;charset=utf-8;' });
-      const url = (win.URL || (win as any).webkitURL) as any;
-      const link = doc.createElement('a');
-      const objectUrl = (url && (url as any).createObjectURL ? (url as any).createObjectURL(blob) : null) as string | null;
+    if (hasBlobCtor && hasURL) {
+      try {
+        const blob = new g.Blob([content], { type: mime });
+        const url = (win.URL || (win as any).webkitURL) as any;
+        const link = doc.createElement('a');
+        const objectUrl = (url && (url as any).createObjectURL ? (url as any).createObjectURL(blob) : null) as string | null;
 
-      if (link && objectUrl) {
-        link.href = objectUrl;
-        link.setAttribute('download', filename);
-        link.style.display = 'none';
-        doc.body.appendChild(link);
-        link.click();
-        if (hasSetTimeout) {
-          g.setTimeout(() => {
-            try {
-              doc.body.removeChild(link);
-            } catch { /* ignore */ }
+        if (link && objectUrl) {
+          link.href = objectUrl;
+          link.setAttribute('download', filename);
+          link.style.display = 'none';
+          doc.body.appendChild(link);
+          link.click();
+          if (hasSetTimeout) {
+            g.setTimeout(() => {
+              try { doc.body.removeChild(link); } catch {}
+              try {
+                if (url && (url as any).revokeObjectURL) {
+                  (url as any).revokeObjectURL(objectUrl);
+                }
+              } catch {}
+            }, 0);
+          } else {
+            try { doc.body.removeChild(link); } catch {}
             try {
               if (url && (url as any).revokeObjectURL) {
                 (url as any).revokeObjectURL(objectUrl);
               }
-            } catch { /* ignore */ }
-          }, 0);
-        } else {
-          // Fallback cleanup without timeout
-          try {
-            doc.body.removeChild(link);
-          } catch { /* ignore */ }
-          try {
-            if (url && (url as any).revokeObjectURL) {
-              (url as any).revokeObjectURL(objectUrl);
-            }
-          } catch { /* ignore */ }
+            } catch {}
+          }
+          return;
         }
+      } catch (e) {
+        try { console.warn('[CsvExportService] Blob URL download failed, attempting data URL fallback.', e); } catch {}
       }
-    } catch {
-      // Silent fail to avoid runtime errors in unusual environments
+    }
+
+    // Fallback: data URL (may be limited by size in some browsers)
+    try {
+      const link = doc.createElement('a');
+      const encoded = encodeURIComponent(content);
+      link.href = `data:${mime},${encoded}`;
+      link.setAttribute('download', filename);
+      link.style.display = 'none';
+      doc.body.appendChild(link);
+      link.click();
+      try { doc.body.removeChild(link); } catch {}
+    } catch (e) {
+      try { console.error('[CsvExportService] Failed to trigger download via fallback.', e); } catch {}
     }
   }
 }
